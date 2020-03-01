@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(path = "/statistics")
+@RequestMapping
 public class StatisticController {
 
     private StatisticService statisticService;
@@ -18,8 +18,8 @@ public class StatisticController {
         this.statisticService = statisticService;
     }
 
-    @GetMapping
+    @GetMapping(path = "/statistics")
     public StatisticDTO getStatistics() {
-        return statisticService.calculateStatistics();
+        return statisticService.getStatistics();
     }
 }
