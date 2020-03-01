@@ -39,16 +39,6 @@ public class StatisticService {
         cleanTransactionsOlderThan60Seconds(transactionsFromLastMinute);
     }
 
-    private void cleanTransactionsOlderThan60Seconds(List<Transaction> transactionsFromLastMinute) {
-        if (!transactionsFromLastMinute.isEmpty()) {
-            transactionRepository.getTransactionList().retainAll(transactionsFromLastMinute);
-        }
-    }
-
-    public synchronized StatisticDTO getStatistics() {
-        return statistics;
-    }
-
     private StatisticDTO calculateForList(List<Transaction> transactionList) {
         long count = transactionList.size();
         BigDecimal sum = StatisticsCalculator.calculateSum(transactionList);
@@ -57,6 +47,15 @@ public class StatisticService {
         BigDecimal max = StatisticsCalculator.calculateMax(transactionList);
 
         return new StatisticDTO(sum.doubleValue(), avg.doubleValue(), max.doubleValue(), min.doubleValue(), count);
+    }
 
+    private void cleanTransactionsOlderThan60Seconds(List<Transaction> transactionsFromLastMinute) {
+        if (!transactionsFromLastMinute.isEmpty()) {
+            transactionRepository.getTransactionList().retainAll(transactionsFromLastMinute);
+        }
+    }
+
+    public synchronized StatisticDTO getStatistics() {
+        return statistics;
     }
 }
