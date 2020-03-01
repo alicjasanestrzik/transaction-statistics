@@ -25,8 +25,9 @@ public class StatisticService {
     }
 
     @EventListener
-    public void calculateStatistics(AddTransactionEvent addTransactionEvent) {
-        statistics = calculate(transactionRepository.returnTransactionsToCalculate());
+    public synchronized void calculateStatistics(AddTransactionEvent event) {
+        List<Transaction> transactionList = transactionRepository.returnTransactionsToCalculate();
+        statistics = calculate(transactionList);
     }
 
     @Scheduled(fixedRate=1000)
@@ -42,18 +43,18 @@ public class StatisticService {
         }
     }
 
-    private StatisticDTO calculate(List<Transaction> transactions) {
+    public StatisticDTO getStatistics() {
+        return statistics;
+    }
 
-        long count = transactions.size();
-        BigDecimal sum = StatisticsCalculator.calculateSum(transactions);
+    private StatisticDTO calculate(List<Transaction> transactionList) {
+        long count = transactionList.size();
+        BigDecimal sum = StatisticsCalculator.calculateSum(transactionList);
         BigDecimal avg = StatisticsCalculator.calculateAvg(sum, count);
-        BigDecimal min = StatisticsCalculator.calculateMin(transactions);
-        BigDecimal max = StatisticsCalculator.calculateMax(transactions);
+        BigDecimal min = StatisticsCalculator.calculateMin(transactionList);
+        BigDecimal max = StatisticsCalculator.calculateMax(transactionList);
 
         return new StatisticDTO(sum.doubleValue(), avg.doubleValue(), max.doubleValue(), min.doubleValue(), count);
 
-    }
-    public StatisticDTO getStatistics() {
-        return statistics;
     }
 }
