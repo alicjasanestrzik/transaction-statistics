@@ -1,6 +1,7 @@
 package com.alicjasanestrzik.transactionstatistics.service;
 
 import com.alicjasanestrzik.transactionstatistics.exception.TransactionInTheFutureException;
+import com.alicjasanestrzik.transactionstatistics.model.StatisticDTO;
 import com.alicjasanestrzik.transactionstatistics.model.Transaction;
 import com.alicjasanestrzik.transactionstatistics.model.TransactionDTO;
 import com.alicjasanestrzik.transactionstatistics.repository.TransactionRepository;
@@ -17,10 +18,13 @@ import java.time.ZonedDateTime;
 public class TransactionService {
 
     private TransactionRepository transactionRepository;
+    private StatisticService statisticService;
 
     @Autowired
-    public TransactionService(TransactionRepository transactionRepository) {
+    public TransactionService(TransactionRepository transactionRepository,
+                              StatisticService statisticService) {
         this.transactionRepository = transactionRepository;
+        this.statisticService = statisticService;
     }
 
     public synchronized void addTransaction(TransactionDTO transactionToAdd) {
@@ -32,6 +36,7 @@ public class TransactionService {
         validateTransactionTimestamp(timestamp);
 
         Transaction transaction = new Transaction(amount, timestamp);
+        statisticService.calculateStatisticsForAdd(transaction, transactionRepository.isEmpty());
         transactionRepository.add(transaction);
     }
 
@@ -42,5 +47,9 @@ public class TransactionService {
         if (now.isBefore(timestamp)) {
             throw new TransactionInTheFutureException();
         }
+    }
+
+    public StatisticDTO getStatistics() {
+        return statisticService.getStatistics();
     }
 }

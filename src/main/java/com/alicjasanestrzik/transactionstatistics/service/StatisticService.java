@@ -1,12 +1,10 @@
 package com.alicjasanestrzik.transactionstatistics.service;
 
-import com.alicjasanestrzik.transactionstatistics.event.AddTransactionEvent;
 import com.alicjasanestrzik.transactionstatistics.model.StatisticDTO;
 import com.alicjasanestrzik.transactionstatistics.model.Transaction;
 import com.alicjasanestrzik.transactionstatistics.repository.TransactionRepository;
 import com.alicjasanestrzik.transactionstatistics.util.StatisticsCalculator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -24,16 +22,20 @@ public class StatisticService {
         this.transactionRepository = transactionRepository;
     }
 
-    @EventListener
-    public synchronized void calculateStatistics(AddTransactionEvent event) {
-        List<Transaction> transactionList = transactionRepository.returnTransactionsToCalculate();
-        statistics = calculate(transactionList);
+    public synchronized void calculateStatisticsForAdd(Transaction transaction, boolean isTransactionListEmpty) {
+        BigDecimal sum = StatisticsCalculator.calculateSum(transaction.getAmount(), statistics);
+        long count = statistics.getCount() + 1;
+        BigDecimal avg = StatisticsCalculator.calculateAvg(sum, count);
+        BigDecimal min = StatisticsCalculator.calculateMin(transaction.getAmount(), statistics, isTransactionListEmpty);
+        BigDecimal max = StatisticsCalculator.calculateMax(transaction.getAmount(), statistics);
+
+        statistics = new StatisticDTO(sum.doubleValue(), avg.doubleValue(), max.doubleValue(), min.doubleValue(), count);
     }
 
     @Scheduled(fixedRate=1000)
     private synchronized void calculateTransactionStatisticsFromLast60Seconds() {
         List<Transaction> transactionsFromLastMinute = transactionRepository.returnTransactionsToCalculate();
-        statistics = calculate(transactionsFromLastMinute);
+        statistics = calculateForList(transactionsFromLastMinute);
         cleanTransactionsOlderThan60Seconds(transactionsFromLastMinute);
     }
 
@@ -43,11 +45,11 @@ public class StatisticService {
         }
     }
 
-    public StatisticDTO getStatistics() {
+    public synchronized StatisticDTO getStatistics() {
         return statistics;
     }
 
-    private StatisticDTO calculate(List<Transaction> transactionList) {
+    private StatisticDTO calculateForList(List<Transaction> transactionList) {
         long count = transactionList.size();
         BigDecimal sum = StatisticsCalculator.calculateSum(transactionList);
         BigDecimal avg = StatisticsCalculator.calculateAvg(sum, count);

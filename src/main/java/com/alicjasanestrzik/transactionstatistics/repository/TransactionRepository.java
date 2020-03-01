@@ -33,4 +33,8 @@ public class TransactionRepository {
     public List<Transaction> getTransactionList() {
         return this.transactionList;
     }
+
+    public boolean isEmpty() {
+        return transactionList.isEmpty();
+    }
 }
