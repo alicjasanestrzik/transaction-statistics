@@ -50,7 +50,7 @@ class TransactionControllerTest {
     @Test
     void testForTooOldTransactions() throws Exception {
 
-        List<String> jsonTransactionsRequests = getJsonRequests("TooOldTransactions.json");
+        List<String> jsonTransactionsRequests = getJsonRequests("TooOldOrFutureTransactions.json");
         long offset = -80000;
         for(String json : jsonTransactionsRequests) {
             sendTransactionRequestAndGetNoContentResponse(offset, json);
@@ -59,7 +59,7 @@ class TransactionControllerTest {
 
         String mvcResult = sendStatisticsRequestAndGetOKResponse();
 
-        List<String> expected_jsonStatisticsResult = getJsonRequests("TooOldTransactionsStatistics.json");
+        List<String> expected_jsonStatisticsResult = getJsonRequests("TooOldOrFutureTransactionsStatistics.json");
         assertEquals(expected_jsonStatisticsResult.get(0), mvcResult);
 
         offset = -40000;
@@ -67,6 +67,26 @@ class TransactionControllerTest {
         String mvcResult1 = sendStatisticsRequestAndGetOKResponse();
 
         assertEquals(expected_jsonStatisticsResult.get(1), mvcResult1);
+    }
+
+    @Test
+    void testForFutureTransactions() throws Exception {
+        List<String> jsonTransactionsRequests = getJsonRequests("TooOldOrFutureTransactions.json");
+        long offset = 10000;
+        for(String line : jsonTransactionsRequests) {
+            JSONObject json = new JSONObject(line);
+            json.put("timestamp", getNowMillisecondsWithOffset(100000));
+            mockMvc.perform(MockMvcRequestBuilders.post("/transaction")
+                    .content(json.toString())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isUnprocessableEntity());
+        }
+
+        String mvcResult = sendStatisticsRequestAndGetOKResponse();
+
+        List<String> expected_jsonStatisticsResult = getJsonRequests("TooOldOrFutureTransactionsStatistics.json");
+        assertEquals(expected_jsonStatisticsResult.get(0), mvcResult);
     }
 
     @Test
