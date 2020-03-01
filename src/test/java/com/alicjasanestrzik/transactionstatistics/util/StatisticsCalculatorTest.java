@@ -1,5 +1,6 @@
 package com.alicjasanestrzik.transactionstatistics.util;
 
+import com.alicjasanestrzik.transactionstatistics.model.StatisticDTO;
 import com.alicjasanestrzik.transactionstatistics.model.Transaction;
 import org.junit.jupiter.api.Test;
 
@@ -22,6 +23,17 @@ class StatisticsCalculatorTest {
         BigDecimal expected = BigDecimal.valueOf(5).setScale(2, RoundingMode.HALF_UP);
 
         assertEquals(expected, StatisticsCalculator.calculateSum(transactionList));
+    }
+
+    @Test
+    public void calculateSumForAdd() {
+        StatisticDTO statisticDTO = new StatisticDTO(2, 2, 2, 0, 1);
+        BigDecimal amount = BigDecimal.valueOf(3);
+
+        BigDecimal sum = StatisticsCalculator.calculateSum(amount, statisticDTO);
+
+        BigDecimal expected = BigDecimal.valueOf(5).setScale(2, RoundingMode.HALF_UP);
+        assertEquals(expected, sum);
     }
 
     @Test
@@ -55,17 +67,17 @@ class StatisticsCalculatorTest {
     }
 
     @Test
-    public void calculateSumIfTransactionListIsEmpty() {
-        BigDecimal expected = new BigDecimal(0).setScale(2, RoundingMode.HALF_UP);
-
-        assertEquals(expected, StatisticsCalculator.calculateSum(new LinkedList<>()));
-    }
-
-    @Test
     public void calculateAvgForPositiveSum() {
         BigDecimal expected = new BigDecimal(2).setScale(2, RoundingMode.HALF_UP);
 
         assertEquals(expected, StatisticsCalculator.calculateAvg(BigDecimal.TEN.setScale(2, RoundingMode.HALF_UP), 5));
+    }
+
+    @Test
+    public void calculateSumIfTransactionListIsEmpty() {
+        BigDecimal expected = new BigDecimal(0).setScale(2, RoundingMode.HALF_UP);
+
+        assertEquals(expected, StatisticsCalculator.calculateSum(new LinkedList<>()));
     }
 
     @Test
@@ -123,6 +135,25 @@ class StatisticsCalculatorTest {
     }
 
     @Test
+    public void calculateMinSecondImplementationEmptyTransactionList() {
+        BigDecimal expected = BigDecimal.valueOf(1).setScale(2, RoundingMode.HALF_UP);
+        StatisticDTO statisticDTO = new StatisticDTO(0, 0, 0, 0, 0);
+        BigDecimal transactionAmount = BigDecimal.valueOf(1);
+
+        assertEquals(expected, StatisticsCalculator.calculateMin(transactionAmount, statisticDTO, true));
+    }
+
+    @Test
+    public void calculateMinSecondImplementationNotEmptyTransactionList() {
+        BigDecimal expected = new BigDecimal(0).setScale(2, RoundingMode.HALF_UP);
+        StatisticDTO statisticDTO = new StatisticDTO(2, 2, 2, 0, 1);
+        BigDecimal transactionAmount = BigDecimal.valueOf(1);
+        boolean isTransactionListEmpty = false;
+
+        assertEquals(expected, StatisticsCalculator.calculateMin(transactionAmount, statisticDTO, false));
+    }
+
+    @Test
     public void calculateMax() {
         List<Transaction> transactionList = new LinkedList<>();
         transactionList.add(prepareTransaction(BigDecimal.valueOf(11)));
@@ -133,6 +164,15 @@ class StatisticsCalculatorTest {
         BigDecimal expected = BigDecimal.valueOf(1000).setScale(2, RoundingMode.HALF_UP);
 
         assertEquals(expected, StatisticsCalculator.calculateMax(transactionList));
+    }
+
+    @Test
+    public void calculateMaxSecondImplementation() {
+        BigDecimal expected = BigDecimal.valueOf(3).setScale(2, RoundingMode.HALF_UP);
+        StatisticDTO statisticDTO = new StatisticDTO(4, 2, 2, 2, 2);
+        BigDecimal transactionAmount = BigDecimal.valueOf(3);
+
+        assertEquals(expected, StatisticsCalculator.calculateMax(transactionAmount, statisticDTO));
     }
 
     @Test

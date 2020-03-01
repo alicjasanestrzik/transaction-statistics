@@ -1,6 +1,7 @@
 package com.alicjasanestrzik.transactionstatistics.service;
 
 import com.alicjasanestrzik.transactionstatistics.exception.TransactionInTheFutureException;
+import com.alicjasanestrzik.transactionstatistics.exception.TransactionTooOldException;
 import com.alicjasanestrzik.transactionstatistics.model.StatisticDTO;
 import com.alicjasanestrzik.transactionstatistics.model.Transaction;
 import com.alicjasanestrzik.transactionstatistics.model.TransactionDTO;
@@ -46,6 +47,11 @@ public class TransactionService {
         //check if transaction is not in the future
         if (now.isBefore(timestamp)) {
             throw new TransactionInTheFutureException();
+        }
+
+        //check if transaction is not too old
+        if (timestamp.isBefore(now.minusSeconds(60))) {
+            throw new TransactionTooOldException();
         }
     }
 

@@ -43,9 +43,9 @@ public class StatisticsCalculator {
 
     public static BigDecimal calculateMin(BigDecimal amount, StatisticDTO statisticDTO, boolean isTransactionListEmpty) {
         if (isTransactionListEmpty) {
-            return amount;
+            return amount.setScale(2, RoundingMode.HALF_UP);
         }
-        
+
         BigDecimal currentMinValue = BigDecimal.valueOf(statisticDTO.getMin());
         BigDecimal min = amount.compareTo(currentMinValue) < 0 ? amount : currentMinValue;
 
